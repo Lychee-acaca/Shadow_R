@@ -25,10 +25,10 @@ test_batch_size = args.test_batch_size
 test_dataset = dehaze_test_dataset(test_dir)
 test_loader = DataLoader(dataset=test_dataset, batch_size=test_batch_size, shuffle=False, num_workers=0)
 
-device = 'cuda:0'
-print(device)
+device_gpu = 'cuda:0'
+device_cpu = 'cpu:0'
 
-model = final_net()
+model = final_net(device_cpu, device_gpu)
 
 try:
     model.remove_model.load_state_dict(torch.load(os.path.join('weights', 'shadowremoval.pkl'), map_location='cpu'), strict=True)
@@ -43,7 +43,8 @@ try:
 except:
     print('loading enhancement model error')
 
-model = model.to(device)
+model = model.to(device_gpu)
+model = model.remove_model.to(device_cpu)
 
 total_time = 0
 with torch.no_grad():
@@ -52,12 +53,10 @@ with torch.no_grad():
     start = time.time()
     for batch_idx, (input, name) in enumerate(test_loader):
         print(name[0])
-        input = input.to(device)
         frame_out = model(input)
-        frame_out = frame_out.to(device)
     
         name = re.findall("\d+",str(name))
-        imwrite(frame_out, os.path.join(output_dir, str(name[0])+'.png'), range=(0, 1))
+        imwrite(frame_out, os.path.join(output_dir, str(name[0])+'.png'), value_range=(0, 1))
 
 
 
