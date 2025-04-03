@@ -43,8 +43,8 @@ try:
 except:
     print('loading enhancement model error')
 
-model = model.to(device_gpu)
-model = model.remove_model.to(device_cpu)
+model.to(device_gpu)
+model.remove_model.to(device_cpu)
 
 total_time = 0
 with torch.no_grad():
